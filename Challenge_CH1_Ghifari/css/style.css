@@ -1,11 +1,19 @@
 *{
 	margin: 0;
 	padding: 0;
+	
+
 }
+
+html {
+    scroll-behavior: smooth;
+}
+
 
 body{
 	font-family: 'helvetica', sans-serif;
 	overflow-x: hidden;
+	width: fit-content;
 }
 
 /* NAVBAR */
@@ -80,9 +88,16 @@ a.btn:hover{
 }
 
 .col_image img{
-	height: 404px;
-	width: 674px;
+	height: 407px;
+	width: 704px;
 	margin-top: 10%;
+	margin-left: 12%;
+}
+
+.car-img{
+	width: 704px;
+    height: 407px;
+	
 }
 
 /* MAIN SECTION */
@@ -330,15 +345,47 @@ a.btn:hover{
 	line-height: 20px;
 }
 
-.col_accordion .card-header .btn-link{
-	font-size: 14px;
-	line-height: 20px;
-	color: black;
-	text-decoration: none;
+.accordion .card-header {
+    margin-bottom: 100Spx;
+    background: #FFFFFF;
+
+    width: 668px;
+    height: 56px;
+
+    box-sizing: border-box;
+    border-radius: 4px;
+
 }
 
-.col_accordion .bi-chevron-down{
-	float: right;
+.col__accordion ul {
+    list-style: none;
+}
+
+.col__faq p {
+    font-size: 14px;
+    line-height: 20px;
+}
+
+.col__accordion .ac {
+    width: 100%;
+    height: auto;
+}
+
+.col__accordion .card-header .btn-link {
+    font-size: 14px;
+    line-height: 20px;
+    color: black;
+    text-decoration: none;
+}
+
+.col__accordion .fa-chevron-down {
+    float: right;
+}
+
+.col__accordion .card {
+    width: 100%;
+    height: auto;
+	margin-bottom: 18px;
 }
 
 /* FAQ Section */
