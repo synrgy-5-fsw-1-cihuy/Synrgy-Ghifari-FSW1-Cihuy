@@ -1,9 +1,9 @@
 const express = require('express');
 const formidableMiddleware = require('formidable');
 
-const authToken = require('./middleware/auth_token');
+const authToken = require('./middleware/auth.middleware');
 const cloudinaryConfig = require('./config/cloudinary');
-const postRouter = require('./router/post.router.js');
+const postRouter = require('./router/user.router.js');
 const carRouter = require('./router/car.router.js');
 
 const PORT = 8001 || process.env.PORT;

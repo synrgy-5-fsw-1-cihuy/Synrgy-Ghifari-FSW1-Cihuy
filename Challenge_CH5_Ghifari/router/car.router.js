@@ -1,108 +1,218 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const formidableMiddleware = require('formidable');
-const cloudinaryConfig = require('../config/cloudinary.js');
-const models = require('../models');
-const Car = models.Car;
+const carController = require("../controllers/car.controller.js");
+const authMiddleware = require("../middleware/auth.middleware.js");
 
-// POST
-router.post('/api/cars', (request, response) => {
-    const form = formidableMiddleware({ });
+// COMPONENTS
+/**
+ * @swagger
+ * components:
+ *      schemas:
+ *          Car:
+ *              type: object
+ *              required:
+ *                  - id
+ *                  - name
+ *                  - price
+ *                  - size
+ *                  - photo
+ *              properties:
+ *                  id:
+ *                      type: integer
+ *                      description: Auto-generated id of the car
+ *                  name:
+ *                      type: string
+ *                      description: The name of the car
+ *                  price:
+ *                      type: string
+ *                      description: The price of the car
+ *                  size:
+ *                      type: string
+ *                      description: The size of the car
+ *                  photo:
+ *                      type: string
+ *                      description: The photo url of the car
+ *                  createdAt:
+ *                      type: timestamp
+ *                      description: The date the data was created
+ *                  updatedAt:
+ *                      type: timestamp
+ *                      description: The date the data was updated
+ *                  deletedAt:
+ *                      type: timestamp
+ *                      description: The date the data was deleted
+ *                  createdBy:
+ *                      type: string
+ *                      description: The user who created the data
+ *                  updatedBy:
+ *                      type: string
+ *                      description: The user who updated the data
+ *                  deletedBy:
+ *                      type: string
+ *                      description: The user who deleted the data
+ */ 
 
-    form.parse(request, (err, fields, files) => {
-        if (err) {
-            next(err);
-            return;
-        };
-        cloudinaryConfig.uploader.upload(files.foto.filepath, function(err, result) {
-            if (err) {
-                next(err);
-                return;
-            }
-            Car.create({
-                name: fields.name,
-                price: fields.price,
-                size: fields.size,
-                foto: result.secure_url
-            }).then(result => {
-                response.status(201).json({message: "Car successfully created", data: fields});
-            });
-        });
-    });
-});
+/**
+ * @swagger
+ * components:
+ *      schemas:
+ *          CarRequest:
+ *              type: object
+ *              required:
+ *                  - name
+ *                  - price
+ *                  - size
+ *                  - photo
+ *              properties:
+ *                  name:
+ *                      type: string
+ *                      description: The name of the car
+ *                  price:
+ *                      type: string
+ *                      description: The price of the car
+ *                  size:
+ *                      type: string
+ *                      description: The size of the car
+ *                  photo:
+ *                      type: string
+ *                      format: binary
+ *                      description: The photo url of the car
+ */ 
+
+/** 
+ * @swagger
+ * components:
+ *      securitySchemes:
+ *          bearerAuth:
+ *              type: http
+ *              scheme: bearer
+ *              bearerFormat: JWT
+*/
 
 // GET ALL
-router.get('/api/cars', (request, response) => {
-    Car.findAll().then(result => {
-        response.status(200).json({data: result});
-    }).catch(err => {
-        console.error(err);
-        throw err;
-    });
-});
+/**
+ * @swagger
+ * /cars:
+ *      get:
+ *          summary: Get all Car data
+ *          tags: [Car]
+ *          security:
+ *              -   bearerAuth: []
+ *          responses:
+ *              "200":
+ *                  description: Retrieve all cars
+ *                  content:
+ *                      application/json:
+ *                          schema:
+ *                              $ref: '#/components/schemas/Car'
+ */ 
+router.get("/api/cars", authMiddleware, carController.getAllCarHandler);
 
 // GET BY ID
-router.get('/api/cars/:id', (request, response) => {
-    Car.findByPk(request.params.id).then(result => {
-        if(result == null) {
-            response.status(404).json({message: "Car not found"});
-            return;
-        }
-        response.status(200).json({data: result});
-    });
-});
+/**
+ * @swagger
+ * /cars/{id}:
+ *      get:
+ *          summary: Get Car data by id
+ *          tags: [Car]
+ *          security:
+ *              -   bearerAuth: []
+ *          parameters:
+ *              -   in: path
+ *                  name: id
+ *                  schema:
+ *                      type: integer
+ *                  required: true
+ *                  description: The car id
+ *          responses:
+ *              "200":
+ *                  description: Retrieve car by id
+ *                  content:
+ *                      application/json:
+ *                          schema:
+ *                              $ref: '#/components/schemas/Car'
+ */ 
+router.get("/api/cars/:id", authMiddleware, carController.getCarByIdHandler);
 
-// update
-router.put('/api/cars/:id', (request, response) => {
-    const form = formidable();
+// POST
+/**
+ * @swagger
+ * /cars:
+ *      post:
+ *          summary: Create new car data
+ *          tags: [Car]
+ *          security:
+ *              -   bearerAuth: []
+ *          requestBody:
+ *              description: Input for new car
+ *              required: true
+ *              content:
+ *                  multipart/form-data:
+ *                      schema:
+ *                          $ref: '#/components/schemas/CarRequest'
+ *          responses:
+ *              "201":
+ *                  description: Car successfully created
+ *                  content:
+ *                      application/json:
+ *                          schema:
+ *                              $ref: '#/components/schemas/Car'
+ */ 
+router.post("/api/cars", authMiddleware, carController.postCarHandler);
 
-    form.parse(request, (err, fields, files) => {
-        if (err) {
-            next(err);
-            return;
-        }
-        Car.findByPk(request.params.id).then(result => {
-            if (result == null) {
-                response.status(404).json({message: "Car not found"});
-                return;
-            }
-            cloudinaryConfig.uploader.upload(files.photo.filepath, function(err, result) {
-                if(err) {
-                    next(err);
-                    return;
-                }
-                Car.update(fields, {where: {id: request.params.id}}).then(result => {
-                    response.status(200).json({
-                        message: "Car has been updated",
-                        data: result
-                    });
-                }).catch(err => {
-                    console.error(err);
-                    throw err;
-                });
-            });
-        }).catch(err => {
-            console.error(err);
-            throw err;
-        });
-    });
-});
+// PUT
+/**
+ * @swagger
+ * /cars/{id}:
+ *      put:
+ *          summary: Update car data
+ *          tags: [Car]
+ *          security:
+ *              -   bearerAuth: []
+ *          parameters:
+ *              -   in: path
+ *                  name: id
+ *                  schema:
+ *                      type: integer
+ *                  required: true
+ *                  description: The car id
+ *          requestBody:
+ *              description: Input for updating car
+ *              required: true
+ *              content:
+ *                  multipart/form-data:
+ *                      schema:
+ *                          $ref: '#/components/schemas/CarRequest'
+ *          responses:
+ *              "201":
+ *                  description: Car successfully updated
+ *                  content:
+ *                      application/json:
+ *                          schema:
+ *                              $ref: '#/components/schemas/Car'
+ */ 
+router.put("/api/cars/:id", authMiddleware, carController.putCarHandler);
 
-// delete
-router.delete('/api/cars/:id', (request, response) => {
-    Car.findByPk(request.params.id).then(result => {
-        if (result == null) {
-            response.status(404).json({message: "Car not found"});
-            return;
-        }
-        
-        Car.destroy({where: {id: request.params.id}}).then(result => {
-            response.status(200).json({message: "Car has been deleted"});
-        });
-    }).catch(err => {
-        console.error(err);
-        throw err;
-    });
-});
+// DELETE
+/**
+ * @swagger
+ * /cars/{id}:
+ *      delete:
+ *          summary: Delete car data
+ *          tags: [Car]
+ *          security:
+ *              -   bearerAuth: []
+ *          parameters:
+ *              -   in: path
+ *                  name: id
+ *                  schema:
+ *                      type: integer
+ *                  required: true
+ *                  description: The car id
+ *          responses:
+ *              "204":
+ *                  description: Car successfully deleted
+ */ 
+router.delete("/api/cars/:id", authMiddleware, carController.deleteCarHandler);
 
 module.exports = router;
